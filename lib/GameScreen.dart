@@ -11,6 +11,7 @@ import 'GamePainter.dart';
 import 'frutaBase.dart';
 import 'frutas.dart';
 
+
 class GameScreen extends StatefulWidget {
   final String mode;
   const GameScreen({super.key, required this.mode});
@@ -100,7 +101,6 @@ class GameScreenState extends State<GameScreen> {
     });
   }
 
-  // TODO: Hacer esto dinamico (poner en un solo sitio la clases de frutas)
   Fruta _genFruta() {
     final rand = Random();
     Point<int> p;
@@ -115,12 +115,8 @@ class GameScreenState extends State<GameScreen> {
       case 'amarillo':
         return FrutaAmarilla(p);
       case 'random':
-        final t = rand.nextInt(3);
-        return t == 0
-            ? FrutaRoja(p)
-            : t == 1
-            ? FrutaAzul(p)
-            : FrutaAmarilla(p);
+        cargarFrutas();
+        return Fruta.generarFrutaRandom(p);
       default:
         return FrutaRoja(p);
     }
