@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import 'frutaBase.dart';
 
-
 class GamePainter extends CustomPainter {
   final List<Point<int>> snake;
   final Fruta fruta;

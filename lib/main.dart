@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'SnakeGameApp.dart';
+import 'package:snake/pantalla_principal.dart';
 
-
-void main() => runApp(const SnakeGameApp());
+void main() {
+runApp(const PantallaPrincipal());
+}
