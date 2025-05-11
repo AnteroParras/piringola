@@ -11,7 +11,6 @@ import 'GamePainter.dart';
 import 'frutaBase.dart';
 import 'frutas.dart';
 
-
 class GameScreen extends StatefulWidget {
   final String mode;
   const GameScreen({super.key, required this.mode});
@@ -101,6 +100,7 @@ class GameScreenState extends State<GameScreen> {
     });
   }
 
+  // TODO: Hacer esto dinamico (poner en un solo sitio la clases de frutas)
   Fruta _genFruta() {
     final rand = Random();
     Point<int> p;
@@ -115,8 +115,12 @@ class GameScreenState extends State<GameScreen> {
       case 'amarillo':
         return FrutaAmarilla(p);
       case 'random':
-        cargarFrutas();
-        return Fruta.generarFrutaRandom(p);
+        final t = rand.nextInt(3);
+        return t == 0
+            ? FrutaRoja(p)
+            : t == 1
+            ? FrutaAzul(p)
+            : FrutaAmarilla(p);
       default:
         return FrutaRoja(p);
     }
@@ -237,6 +241,23 @@ class GameScreenState extends State<GameScreen> {
         ),
         onKey: (event) => _onKey(event),
       ),
+      floatingActionButton: SafeArea(
+        child: Align(
+          alignment: Alignment.bottomLeft,
+          child: FloatingActionButton(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: const CircleBorder(),
+            tooltip: 'Ayuda',
+            heroTag: 'ayuda',
+            onPressed: () {
+              _mostrarAyuda();
+            },
+            child: const Icon(Icons.help),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
 
@@ -281,10 +302,10 @@ class GameScreenState extends State<GameScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(onPressed: _togglePause, child: const Text('Start')),
-            ElevatedButton(onPressed: _togglePause, child: const Text('Select')),
-            ElevatedButton(onPressed: () {}, child: const Text('A')),
-            ElevatedButton(onPressed: _promptExit, child: const Text('B')),
+            ElevatedButton(onPressed: _startGame, child: const Text('   Reiniciar 🔄')),
+            ElevatedButton(onPressed: _togglePause, child: const Text('Pausa ▶️')),
+            // ElevatedButton(onPressed: () {}, child: const Text('A')),
+            ElevatedButton(onPressed: _promptExit, child: const Text('Salir ❌')),
           ],
         ),
         const SizedBox(height: 20),
@@ -301,4 +322,137 @@ class GameScreenState extends State<GameScreen> {
       setState(() => dir = dirToSet);
     }
   }
+
+  void _mostrarAyuda() {
+    // Pausamos el juego
+    setState(() {
+      paused = true;
+    });
+    switch (widget.mode) {
+      case 'rojo':
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🆘 Ayuda'),
+            content: const Text(
+              'El modo de Juego es la Fruta Roja.\n'
+              '🍎 Fruta Roja: Aumenta tu puntuación.\n\n'
+                  '🎮 Controles:\n'
+                  '   ▶️ Pausa: Pausa el juego.\n'
+                  '   🔄 Reiniciar: Reinicia el juego.\n'
+                  '   ❌ Salir: Sal del juego.\n\n'
+                  '🍀 ¡Buena suerte!',
+            ),
+            actions: [
+            TextButton(
+              onPressed: () {
+                // Pausamos el juego
+                setState(() {
+                  paused = false;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text('Cerrar'),
+            ),
+            ],
+          ),
+        );
+        break;
+      case 'azul':
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🆘 Ayuda'),
+            content: const Text(
+                  'El modo de Juego es la Fruta Azul.\n'
+                  '🫐 Fruta Azul: Invierte los controles cada vez que comes una pieza Azul.\n\n'
+                  '🎮 Controles:\n'
+                  '   ▶️ Pausa: Pausa el juego.\n'
+                  '   🔄 Reiniciar: Reinicia el juego.\n'
+                  '   ❌ Salir: Sal del juego.\n\n'
+                  '🍀 ¡Buena suerte!',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Pausamos el juego
+                  setState(() {
+                    paused = false;
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('Cerrar'),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 'amarillo':
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🆘 Ayuda'),
+            content: const Text(
+              'El modo de Juego es la Fruta Amarilla.\n'
+                  '🍌 Fruta Amarilla: Crece aleatoriamente entre 1 y 3 !!!! CUIDADO !!!! .\n\n\n'
+                  '🎮 Controles:\n'
+                  '   ▶️ Pausa: Pausa el juego.\n'
+                  '   🔄 Reiniciar: Reinicia el juego.\n'
+                  '   ❌ Salir: Sal del juego.\n\n'
+                  '🍀 ¡Buena suerte!',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Pausamos el juego
+                  setState(() {
+                    paused = false;
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('Cerrar'),
+              ),
+            ],
+          ),
+        );
+        break;
+      case 'random':
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('🆘 Ayuda'),
+            content: const Text(
+              'El modo de Juego es MODO ALEATORIO!! .\n'
+              '🍎 Fruta Roja: Aumenta tu puntuación.\n'
+                  '🫐 Fruta Azul: Invierte los controles.\n'
+                  '🍌 Fruta Amarilla: Crece aleatoriamente.\n'
+                  'Fruta Nueva: Pueden definir frutas nuevas con nuevas funcionalides o dificultades .\n\n'
+                  '🎮 Controles:\n'
+                  '   ▶️ Pausa: Pausa el juego.\n'
+                  '   🔄 Reiniciar: Reinicia el juego.\n'
+                  '   ❌ Salir: Sal del juego.\n\n'
+                  '🍀 ¡Buena suerte!',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Pausamos el juego
+                  setState(() {
+                    paused = false;
+                  });
+                  Navigator.pop(context);
+                },
+                child: const Text('Cerrar'),
+              ),
+            ],
+          ),
+        );
+        break;
+    }
+
+
+
+
+  }
+
 }
