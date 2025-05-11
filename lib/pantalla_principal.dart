@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'GameScreen.dart';
+import 'audio_service.dart';
 
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
@@ -51,19 +52,21 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
   late VideoPlayerController _controller;
   late AnimationController _tiltController;
   late Animation<double> _tiltAnimation;
-  late AudioPlayer _audioPlayer;
+  late AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isMuted = false;
   bool girl = false;
 
   String get _videoAsset => girl ? 'ContenidoVisual/introgirl.mp4' : 'ContenidoVisual/videointro.mp4';
-  String get _musicAsset => girl ? 'ContenidoVisual/Girl.wav' : 'ContenidoVisual/RICK.wav';
+  String get _musicAsset => girl ? 'ContenidoVisual/Girl.mp3' : 'ContenidoVisual/RICK.mp3';
 
   void _start(BuildContext c, String mode) => Navigator.push(
       c,
       MaterialPageRoute(
         builder: (_) => GameScreen(mode: mode),
       ));
+
+  final audioService = AudioService();
 
   @override
   void initState() {
@@ -79,37 +82,41 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
       end: 0.05,
     ).animate(CurvedAnimation(parent: _tiltController, curve: Curves.easeInOut));
 
-    _audioPlayer = AudioPlayer();
-    _audioPlayer.setReleaseMode(ReleaseMode.loop);
-
     _initVideoAndMusic();
+    audioService.play(_musicAsset); // Reproduce el audio globalmente
   }
 
   Future<void> _initVideoAndMusic() async {
+  try {
     // Inicializa el video
     _controller = VideoPlayerController.asset(_videoAsset);
 
-    // Escucha el estado
     _controller.addListener(() {
       if (_controller.value.isInitialized && !_controller.value.isPlaying) {
-        _controller.play();  // Asegúrate de que empiece a reproducirse si no lo está
-        setState(() {});     // Forzar reconstrucción del widget
+        setState(() {}); // Forzar reconstrucción del widget
       }
     });
 
     await _controller.initialize();
     _controller.setLooping(true);
-    await _controller.play();
-    setState(() {});
+    await _controller.play(); // Reproduce el video después de inicializarlo
 
+    // Inicializa el audio
+    await _audioPlayer.setSource(AssetSource(_musicAsset));
+    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
+    if (!_isMuted) {
+      await _audioPlayer.play(AssetSource(_musicAsset)); // Reproduce el audio en bucle
+    }
+  } catch (e) {
+    debugPrint('Error al inicializar video o audio: $e');
   }
-
+}
 
   @override
   void dispose() {
     _controller.dispose();
     _tiltController.dispose();
-    _audioPlayer.dispose();
+    audioService.stop(); // Detén el audio globalmente
     super.dispose();
   }
 
