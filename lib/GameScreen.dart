@@ -241,7 +241,8 @@ class GameScreenState extends State<GameScreen> {
         ),
         onKey: (event) => _onKey(event),
       ),
-      floatingActionButton: SafeArea(
+     floatingActionButton: Padding(
+       padding: const EdgeInsets.only(bottom: 65.8),
         child: Align(
           alignment: Alignment.bottomLeft,
           child: FloatingActionButton(

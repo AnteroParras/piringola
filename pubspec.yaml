@@ -12,7 +12,6 @@ dependencies:
     sdk: flutter
   video_player: ^2.7.0
   cupertino_icons: ^1.0.8
-  audioplayers: ^5.2.1
 
 
 dev_dependencies:
@@ -26,6 +25,4 @@ flutter:
     - ContenidoVisual/videointro.mp4
     - ContenidoVisual/SNAKE.jpg
     - ContenidoVisual/SNAKEoscuro.png
-    - ContenidoVisual/RICK.mp3
-    - ContenidoVisual/Girl.mp3
     - ContenidoVisual/introgirl.mp4

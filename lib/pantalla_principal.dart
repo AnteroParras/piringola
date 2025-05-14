@@ -3,10 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'GameScreen.dart';
-import 'audio_service.dart';
-
 class PantallaPrincipal extends StatefulWidget {
   const PantallaPrincipal({super.key});
 
@@ -52,13 +49,11 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
   late VideoPlayerController _controller;
   late AnimationController _tiltController;
   late Animation<double> _tiltAnimation;
-  late AudioPlayer _audioPlayer = AudioPlayer();
 
   bool _isMuted = false;
   bool girl = false;
 
   String get _videoAsset => girl ? 'ContenidoVisual/introgirl.mp4' : 'ContenidoVisual/videointro.mp4';
-  String get _musicAsset => girl ? 'ContenidoVisual/Girl.mp3' : 'ContenidoVisual/RICK.mp3';
 
   void _start(BuildContext c, String mode) => Navigator.push(
       c,
@@ -66,7 +61,6 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
         builder: (_) => GameScreen(mode: mode),
       ));
 
-  final audioService = AudioService();
 
   @override
   void initState() {
@@ -82,11 +76,10 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
       end: 0.05,
     ).animate(CurvedAnimation(parent: _tiltController, curve: Curves.easeInOut));
 
-    _initVideoAndMusic();
-    audioService.play(_musicAsset); // Reproduce el audio globalmente
+    _inicializarVideo();
   }
 
-  Future<void> _initVideoAndMusic() async {
+  Future<void> _inicializarVideo() async {
   try {
     // Inicializa el video
     _controller = VideoPlayerController.asset(_videoAsset);
@@ -101,12 +94,6 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
     _controller.setLooping(true);
     await _controller.play(); // Reproduce el video después de inicializarlo
 
-    // Inicializa el audio
-    await _audioPlayer.setSource(AssetSource(_musicAsset));
-    await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-    if (!_isMuted) {
-      await _audioPlayer.play(AssetSource(_musicAsset)); // Reproduce el audio en bucle
-    }
   } catch (e) {
     debugPrint('Error al inicializar video o audio: $e');
   }
@@ -116,7 +103,6 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
   void dispose() {
     _controller.dispose();
     _tiltController.dispose();
-    audioService.stop(); // Detén el audio globalmente
     super.dispose();
   }
 
@@ -124,7 +110,6 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
     setState(() {
       _isMuted = !_isMuted;
       _controller.setVolume(_isMuted ? 0 : 1);
-      _audioPlayer.setVolume(_isMuted ? 0 : 1);
     });
   }
 
@@ -135,8 +120,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
     });
     await _controller.pause();
     await _controller.dispose();
-    await _audioPlayer.stop();
-    await _initVideoAndMusic();
+    await _inicializarVideo();
   }
 
   @override
@@ -258,7 +242,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
           children: [
             // Botón de ayuda (izquierda, azul, redondo)
             Padding(
-              padding: const EdgeInsets.only(left: 16.0, bottom: 8.0),
+              padding: const EdgeInsets.only(left: 16.0, bottom: 16.0), // Aumentamos el bottom padding
               child: FloatingActionButton(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
@@ -300,7 +284,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
             ),
             // Botón de volumen (derecha)
             Padding(
-              padding: const EdgeInsets.only(right: 16.0, bottom: 8.0),
+              padding: const EdgeInsets.only(right: 16.0, bottom: 16.0), // Aumentamos el bottom padding
               child: FloatingActionButton(
                 elevation: 0,
                 shape: const CircleBorder(),
@@ -485,7 +469,6 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
                   setState(() {
                     volumenActual = nuevoVolumen;
                     _controller.setVolume(volumenActual);
-                    _audioPlayer.setVolume(_isMuted ? 0 : volumenActual);
                   });
                 },
               ),
