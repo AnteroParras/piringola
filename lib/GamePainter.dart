@@ -5,36 +5,50 @@ import 'package:flutter/material.dart';
 
 import 'frutaBase.dart';
 
+
 class GamePainter extends CustomPainter {
+  /// Información a dibujar
   final List<Point<int>> snake;
   final Fruta fruta;
   final double squareSize;
 
-  GamePainter({required this.snake, required this.fruta, required this.squareSize});
+  /// Estilos de los objetos
+  late final Paint snakeStyle;
+  late final Paint fruitStyle;
+  late final Paint backgroundStyle;
+
+  GamePainter({required this.snake, required this.fruta, required this.squareSize})
+  {
+    snakeStyle = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.greenAccent;
+
+    fruitStyle = Paint()
+      ..style = PaintingStyle.fill
+      ..color = fruta.color; // Color definido en la clase Fruta
+
+    backgroundStyle = Paint()..color = const Color(0xFF1E1E1E);
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
-    final bg = Paint()..color = const Color(0xFF1E1E1E);
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bg);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), backgroundStyle);
 
-    final paintSnake = Paint()
-      ..style = PaintingStyle.fill
-      ..color = Colors.greenAccent;
-    for (final s in snake) {
+    // Dibujar los pedazos de la serpiente
+    for (final bodyPiece in snake) {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(s.x * squareSize, s.y * squareSize, squareSize, squareSize),
+          Rect.fromLTWH(bodyPiece.x * squareSize, bodyPiece.y * squareSize, squareSize, squareSize),
           const Radius.circular(4),
         ),
-        paintSnake,
+        snakeStyle,
       );
     }
 
-    final paintFruit = Paint()..color = fruta.color;
-    final p = fruta.posicion;
+    // Dibujar la fruta
     canvas.drawOval(
-      Rect.fromLTWH(p.x * squareSize, p.y * squareSize, squareSize, squareSize),
-      paintFruit,
+      Rect.fromLTWH(fruta.posicion.x * squareSize, fruta.posicion.y * squareSize, squareSize, squareSize),
+      fruitStyle,
     );
   }
 

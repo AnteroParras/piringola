@@ -22,12 +22,12 @@ class GameScreenState extends State<GameScreen> {
   static const int rows = 20, cols = 20;
   final Duration tickRate = const Duration(milliseconds: 200);
   late List<Point<int>> snake;
-  late Point<int> dir;
+  late Point<int> snakeDirection;
   late Fruta fruta;
   Timer? timer;
   bool paused = false;
   bool gameOver = false;
-  int growQueue = 0;
+  int growQueue = 0; // Numero de bloques por crecer de la serpiente
   int score = 0;
   bool invertirControles = false;
   final FocusNode focusNode = FocusNode();
@@ -48,50 +48,69 @@ class GameScreenState extends State<GameScreen> {
 
   void _startGame() {
     snake = [const Point(10, 10)];
-    dir = const Point(0, -1);
+    snakeDirection = const Point(0, -1);
     score = 0;
     gameOver = false;
     paused = false;
     growQueue = 0;
     fruta = _genFruta();
     timer?.cancel();
+    // Cada tickrate, el contador llama a _tick()
     timer = Timer.periodic(tickRate, (_) => _tick());
     focusNode.requestFocus();
   }
 
+  /// Función de los eventos de controles
   void _onKey(RawKeyEvent event) {
     if (event is RawKeyDownEvent) {
       final key = event.logicalKey.keyLabel.toLowerCase();
       final inv = invertirControles;
-      Point<int> newDir = dir;
+      Point<int> newDir = snakeDirection;
+
+      // Cambia la dirección de la serpiente según la tecla presionada
+      // Si los controles están invertidos, cambia a la dirección opuesta
       if (key == 'w') newDir = inv ? const Point(0, 1) : const Point(0, -1);
       if (key == 's') newDir = inv ? const Point(0, -1) : const Point(0, 1);
       if (key == 'a') newDir = inv ? const Point(1, 0) : const Point(-1, 0);
       if (key == 'd') newDir = inv ? const Point(-1, 0) : const Point(1, 0);
-      if ((newDir.x + dir.x != 0) || (newDir.y + dir.y != 0)) {
-        setState(() => dir = newDir);
+
+      // Cambia la dirección de la serpiente si no es opuesta a la actual (arriba-abajo, izquierda-derecha)
+      if ((newDir.x + snakeDirection.x != 0) || (newDir.y + snakeDirection.y != 0)) {
+        setState(() => snakeDirection = newDir);
       }
     }
   }
 
+  /// Funcion de lógica de juego
   void _tick() {
     if (paused || gameOver) return;
+
+    // Acoplar la lógica del juego en setState para acutalizar la interfaz
     setState(() {
       final next = Point(
-        (snake.first.x + dir.x + cols) % cols,
-        (snake.first.y + dir.y + rows) % rows,
+        (snake.first.x + snakeDirection.x + cols) % cols,
+        (snake.first.y + snakeDirection.y + rows) % rows,
       );
+
+      // Si la serpiente se choca con ella misma, termina el juego
       if (snake.contains(next)) {
         gameOver = true;
         timer?.cancel();
         _gameOverDialog();
         return;
       }
+
+      // Insertar la nueva posición de la cabeza de la serpiente
       snake.insert(0, next);
+
+      // Si la serpiente come la fruta, genera una nueva
       if (next == fruta.posicion) {
         fruta.aplicarEfecto(this);
         fruta = _genFruta();
       }
+
+      // Si tras la inserción, la serpiente serpiente tiene bloques por crecer,
+      // no se elimina el último bloque
       if (growQueue > 0) {
         growQueue--;
       } else {
@@ -100,13 +119,17 @@ class GameScreenState extends State<GameScreen> {
     });
   }
 
-  // TODO: Hacer esto dinamico (poner en un solo sitio la clases de frutas)
+  /// Genera una nueva fruta en una posición aleatoria
   Fruta _genFruta() {
+
+    // Genera una posición aleatoria que no esté ocupada por la serpiente
     final rand = Random();
     Point<int> p;
     do {
       p = Point(rand.nextInt(cols), rand.nextInt(rows));
     } while (snake.contains(p));
+
+    // Genera una nueva fruta según el modo de juego
     switch (widget.mode) {
       case 'rojo':
         return FrutaRoja(p);
@@ -115,12 +138,8 @@ class GameScreenState extends State<GameScreen> {
       case 'amarillo':
         return FrutaAmarilla(p);
       case 'random':
-        final t = rand.nextInt(3);
-        return t == 0
-            ? FrutaRoja(p)
-            : t == 1
-            ? FrutaAzul(p)
-            : FrutaAmarilla(p);
+        cargarFrutas();
+        return Fruta.generarFrutaRandom(p);
       default:
         return FrutaRoja(p);
     }
@@ -132,6 +151,7 @@ class GameScreenState extends State<GameScreen> {
     });
   }
 
+  /// Muestra un diálogo de Game Over y guarda la puntuación
   void _gameOverDialog() {
     final controller = TextEditingController();
     showDialog(
@@ -319,8 +339,8 @@ class GameScreenState extends State<GameScreen> {
     final dirToSet = inv
         ? Point(-newDir.x, -newDir.y)
         : newDir;
-    if ((dirToSet.x + dir.x != 0) || (dirToSet.y + dir.y != 0)) {
-      setState(() => dir = dirToSet);
+    if ((dirToSet.x + snakeDirection.x != 0) || (dirToSet.y + snakeDirection.y != 0)) {
+      setState(() => snakeDirection = dirToSet);
     }
   }
 

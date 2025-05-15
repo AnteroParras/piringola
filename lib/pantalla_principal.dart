@@ -45,6 +45,7 @@ class PaginaPrincipalState extends StatefulWidget {
   State<PaginaPrincipalState> createState() => _PaginaPrincipalStateState();
 }
 
+/// Página principal del menú del juego
 class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with TickerProviderStateMixin {
   late VideoPlayerController _controller;
   late AnimationController _tiltController;
@@ -53,8 +54,10 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
   bool _isMuted = false;
   bool girl = false;
 
+  /// Selección del video según modo 'girl'
   String get _videoAsset => girl ? 'ContenidoVisual/introgirl.mp4' : 'ContenidoVisual/videointro.mp4';
 
+  /// Navega a la pantalla de juego con el modo seleccionado
   void _start(BuildContext c, String mode) => Navigator.push(
       c,
       MaterialPageRoute(
@@ -66,6 +69,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
   void initState() {
     super.initState();
 
+    // Controladores para el logo animado
     _tiltController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -76,9 +80,10 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
       end: 0.05,
     ).animate(CurvedAnimation(parent: _tiltController, curve: Curves.easeInOut));
 
-    _inicializarVideo();
+    _inicializarVideo(); // Cargar video de fondo
   }
 
+  /// Carga y reproduce el video de fondo
   Future<void> _inicializarVideo() async {
   try {
     // Inicializa el video
@@ -120,7 +125,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
     });
     await _controller.pause();
     await _controller.dispose();
-    await _inicializarVideo();
+    await _inicializarVideo(); // Cargar el nuevo video
   }
 
   @override
@@ -131,6 +136,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
       body: Stack(
         fit: StackFit.expand,
         children: [
+          // Video de fondo
           _controller.value.isInitialized
               ? FittedBox(
             fit: BoxFit.cover,
@@ -153,6 +159,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Logo del juego
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0, bottom: 32.0),
                   child: AnimatedBuilder(
@@ -172,6 +179,7 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
                   ),
                 ),
 
+                // Botones del menú principal
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Column(
@@ -236,6 +244,8 @@ class _PaginaPrincipalStateState extends State<PaginaPrincipalState> with Ticker
           ),
         ],
       ),
+
+      // Botones flotantes de ayuda y volumen
       floatingActionButton: SafeArea(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
